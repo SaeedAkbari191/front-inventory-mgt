@@ -6,90 +6,92 @@ const PurchasePage = () => {
   const [products, setProducts] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [productId, setProductId] = useState("");
-  const [supplierId, setSuppplierId] = useState("");
+  const [supplierId, setSupplierId] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [unitPrice, setUnitPrice] = useState("");
   const [description, setDescription] = useState("");
   const [note, setNote] = useState("");
-  const [quantity, setQuantity] = useState("");
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const fetchproductsAndSuppliers = async () => {
-      try {
-        const productData = await ApiService.getAllProducts();
-        const supplierData = await ApiService.getAllSuppliers();
-        setProducts(productData.products);
-        setSuppliers(supplierData.suppliers);
-      } catch (error) {
-        showMessage(
-          error.response?.data?.message || "Error Getting Products: " + error
-        );
-      }
-    };
-
-    fetchproductsAndSuppliers();
+    fetchData();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      const p = await ApiService.getAllProducts();
+      const s = await ApiService.getAllSuppliers();
+
+      setProducts(p.products || []);
+      setSuppliers(s.suppliers || []);
+    } catch (err) {
+      showMessage("Error loading data");
+    }
+  };
+
+  const showMessage = (msg) => {
+    setMessage(msg);
+    setTimeout(() => setMessage(""), 4000);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!productId || !supplierId || !quantity) {
-      showMessage("Please fill in all required fields");
-      return
+    // ✅ validation
+    if (!productId || !supplierId) {
+      return showMessage("Select product & supplier");
     }
+
+    if (quantity <= 0 || unitPrice <= 0) {
+      return showMessage("Quantity & price must be greater than 0");
+    }
+
+    // ✅ ساختار جدید (مطابق بک‌اند)
     const body = {
-      productId,
-      quantity: parseInt(quantity),
-      supplierId,
+      supplierId: Number(supplierId),
       description,
       note,
+      items: [
+        {
+          productId: Number(productId),
+          quantity: Number(quantity),
+          unitPrice: Number(unitPrice),
+        },
+      ],
     };
-    console.log(body)
 
     try {
-      const respone = await ApiService.purchaseProduct(body);
-      showMessage(respone.message);
-      resetForm();
+      const response = await ApiService.purchaseProduct(body);
+      showMessage(response.message);
+
+      // reset فرم (optional ولی حرفه‌ای)
+      setProductId("");
+      setSupplierId("");
+      setQuantity("");
+      setUnitPrice("");
+      setDescription("");
+      setNote("");
+
     } catch (error) {
-      showMessage(
-        error.response?.data?.message || "Error Purchasing Products: " + error
-      );
+      showMessage(error.response?.data?.message || "Error Purchasing Product");
     }
-  };
-
-  const resetForm = () => {
-    setProductId("");
-    setSuppplierId("");
-    setDescription("");
-    setNote("");
-    setQuantity("");
-  };
-
-  //metjhod to show message or errors
-  const showMessage = (msg) => {
-    setMessage(msg);
-    setTimeout(() => {
-      setMessage("");
-    }, 4000);
   };
 
   return (
     <Layout>
       {message && <div className="message">{message}</div>}
-      <div className="purchase-form-page">
-        <h1>Receive Inventory</h1>
+
+      <div className="product-form-page">
+        <h1>Purchase Product</h1>
+
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Select product</label>
-
-            <select
-              value={productId}
-              onChange={(e) => setProductId(e.target.value)}
-              required
-            >
+            <label>Select Product</label>
+            <select value={productId} onChange={(e) => setProductId(e.target.value)} required>
               <option value="">Select a product</option>
-              {products.map((product) => (
-                <option key={product.id} value={product.id}>
-                  {product.name}
+              {products.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} {p.stock !== undefined ? `(Stock: ${p.stock})` : ""}
                 </option>
               ))}
             </select>
@@ -97,39 +99,12 @@ const PurchasePage = () => {
 
           <div className="form-group">
             <label>Select Supplier</label>
-
-            <select
-              value={supplierId}
-              onChange={(e) => setSuppplierId(e.target.value)}
-              required
-            >
+            <select value={supplierId} onChange={(e) => setSupplierId(e.target.value)} required>
               <option value="">Select a supplier</option>
-              {suppliers.map((supplier) => (
-                <option key={supplier.id} value={supplier.id}>
-                  {supplier.name}
-                </option>
+              {suppliers.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </select>
-          </div>
-
-          <div className="form-group">
-            <label>Description</label>
-            <input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Note</label>
-            <input
-              type="text"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              required
-            />
           </div>
 
           <div className="form-group">
@@ -142,10 +117,39 @@ const PurchasePage = () => {
             />
           </div>
 
+          <div className="form-group">
+            <label>Buy Price</label>
+            <input
+              type="number"
+              value={unitPrice}
+              onChange={(e) => setUnitPrice(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Description</label>
+            <input
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Note</label>
+            <input
+              type="text"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+          </div>
+
           <button type="submit">Purchase Product</button>
         </form>
       </div>
     </Layout>
   );
 };
+
 export default PurchasePage;

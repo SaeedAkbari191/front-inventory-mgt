@@ -5,88 +5,96 @@ import ApiService from "../service/ApiService";
 const SellPage = () => {
   const [products, setProducts] = useState([]);
   const [productId, setProductId] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [unitPrice, setUnitPrice] = useState("");
   const [description, setDescription] = useState("");
   const [note, setNote] = useState("");
-  const [quantity, setQuantity] = useState("");
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const productData = await ApiService.getAllProducts();
-        setProducts(productData.products);
-      } catch (error) {
-        showMessage(
-          error.response?.data?.message || "Error Getting Products: " + error
-        );
-      }
-    };
-
     fetchProducts();
   }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const p = await ApiService.getAllProducts();
+      setProducts(p.products || []);
+    } catch {
+      showMessage("Error loading products");
+    }
+  };
+
+  const showMessage = (msg) => {
+    setMessage(msg);
+    setTimeout(() => setMessage(""), 4000);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!productId || !quantity) {
-      showMessage("Please fill in all required fields");
-      return
+    const selectedProduct = products.find(p => p.id == productId);
+
+    // ✅ validation
+    if (!selectedProduct) {
+      return showMessage("Select product");
     }
+
+    if (quantity <= 0 || unitPrice <= 0) {
+      return showMessage("Quantity & price must be greater than 0");
+    }
+
+    if (selectedProduct.stock !== undefined && quantity > selectedProduct.stock) {
+      return showMessage("Not enough stock");
+    }
+
+    // ✅ ساختار جدید (items-based)
     const body = {
-      productId,
-      quantity: parseInt(quantity),
-  
+      description,
+      note,
+      items: [
+        {
+          productId: Number(productId),
+          quantity: Number(quantity),
+          unitPrice: Number(unitPrice),
+        },
+      ],
     };
 
     try {
-      const respone = await ApiService.sellProduct(body);
-      showMessage(respone.message);
-      resetForm();
+      const response = await ApiService.sellProduct(body);
+      showMessage(response.message);
+
+      // reset فرم
+      setProductId("");
+      setQuantity("");
+      setUnitPrice("");
+      setDescription("");
+      setNote("");
+
     } catch (error) {
-      showMessage(
-        error.response?.data?.message || "Error Selling Product: " + error
-      );
+      showMessage(error.response?.data?.message || "Error Selling Product");
     }
-  };
-
-  const resetForm = () => {
-    setProductId("");
-    setDescription("");
-    setNote("");
-    setQuantity("");
-  };
-
-  //metjhod to show message or errors
-  const showMessage = (msg) => {
-    setMessage(msg);
-    setTimeout(() => {
-      setMessage("");
-    }, 4000);
   };
 
   return (
     <Layout>
       {message && <div className="message">{message}</div>}
-      <div className="purchase-form-page">
+
+      <div className="product-form-page">
         <h1>Sell Product</h1>
+
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Select product</label>
-
-            <select
-              value={productId}
-              onChange={(e) => setProductId(e.target.value)}
-              required
-            >
+            <label>Select Product</label>
+            <select value={productId} onChange={(e) => setProductId(e.target.value)} required>
               <option value="">Select a product</option>
               {products.map((product) => (
                 <option key={product.id} value={product.id}>
-                  {product.name}
+                  {product.name} {product.stock !== undefined ? `(Stock: ${product.stock})` : ""}
                 </option>
               ))}
             </select>
           </div>
-
 
           <div className="form-group">
             <label>Quantity</label>
@@ -99,12 +107,21 @@ const SellPage = () => {
           </div>
 
           <div className="form-group">
+            <label>Sell Price</label>
+            <input
+              type="number"
+              value={unitPrice}
+              onChange={(e) => setUnitPrice(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="form-group">
             <label>Description</label>
             <input
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              required
             />
           </div>
 
@@ -114,10 +131,8 @@ const SellPage = () => {
               type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              required
             />
           </div>
-
 
           <button type="submit">Sell Product</button>
         </form>
@@ -125,4 +140,5 @@ const SellPage = () => {
     </Layout>
   );
 };
+
 export default SellPage;
