@@ -29,6 +29,8 @@ const TransactionsPage = () => {
         if (res.status === 200) {
           setTransactions(res.transactions || []);
           setTotalPages(res.totalPages || 0);
+          console.log(res)
+          
         }
       } catch (error) {
         showMessage(
@@ -105,8 +107,9 @@ const TransactionsPage = () => {
                   <tr>
                     <th>Type</th>
                     <th>Status</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
                     <th>Total Price</th>
-                    <th>Products</th>
                     <th>Date</th>
                     <th className="text-end">Actions</th>
                   </tr>
@@ -138,17 +141,26 @@ const TransactionsPage = () => {
                         </span>
                       </td>
 
-                      {/* PRICE */}
-                      <td className="fw-semibold">
-                        {t.totalPrice ?? 0}
-                      </td>
-
                       {/* QTY */}
                       <td>
                         {t.items
                           ? t.items.reduce((sum, i) => sum + i.quantity, 0)
                           : 0}
                       </td>
+
+                      {/* Unit Price */}
+                      <td>
+                        {t.items
+                          ? t.items.reduce((sum, i) => sum + i.unitPrice, 0)
+                          : 0}
+                      </td>
+
+                      {/* PRICE */}
+                      <td className="fw-semibold">
+                        {t.totalPrice ?? 0}
+                      </td>
+
+                      
 
                       {/* DATE */}
                       <td className="text-muted small">

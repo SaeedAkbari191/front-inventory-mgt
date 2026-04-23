@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../component/Layout";
 import ApiService from "../service/ApiService";
-import "./common.css";
 
 const EditUserPage = () => {
   const { id } = useParams();
@@ -14,72 +13,116 @@ const EditUserPage = () => {
     phoneNumber: "",
   });
 
+  const [message, setMessage] = useState("");
+
   useEffect(() => {
     const loadUser = async () => {
-      const res = await ApiService.getUserById(id);
-      setUser(res.user);
+      try {
+        const res = await ApiService.getUserById(id);
+        setUser(res.user || {});
+      } catch (error) {
+        showMessage("Error loading user");
+      }
     };
     loadUser();
   }, [id]);
+
+  const showMessage = (msg) => {
+    setMessage(msg);
+    setTimeout(() => setMessage(""), 4000);
+  };
 
   const handleChange = (e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
   };
 
-  const handleSave = async () => {
-    await ApiService.updateUser(id, user);
-    alert("User updated");
-    navigate("/users");
+  const handleSave = async (e) => {
+    e.preventDefault();
+    try {
+      await ApiService.updateUser(id, user);
+      showMessage("User updated successfully");
+      setTimeout(() => navigate("/users"), 1000);
+    } catch (error) {
+      showMessage(error.response?.data?.message || "Error updating user");
+    }
   };
 
   return (
     <Layout>
-      <div className="edit-user-container">
+      <div className="container py-4">
 
-        <div className="edit-user-card">
-          <h2>Edit User</h2>
-
-          <div className="form-group">
-            <label>Name</label>
-            <input
-              name="name"
-              value={user.name}
-              onChange={handleChange}
-              placeholder="Enter name"
-            />
+        {/* MESSAGE */}
+        {message && (
+          <div className="alert alert-info shadow-sm">
+            {message}
           </div>
+        )}
 
-          <div className="form-group">
-            <label>Email</label>
-            <input
-              name="email"
-              value={user.email}
-              onChange={handleChange}
-              placeholder="Enter email"
-            />
-          </div>
+        <div className="card shadow-sm border-0">
+          <div className="card-body">
 
-          <div className="form-group">
-            <label>Phone</label>
-            <input
-              name="phoneNumber"
-              value={user.phoneNumber}
-              onChange={handleChange}
-              placeholder="Enter phone number"
-            />
-          </div>
+            <h4 className="fw-bold mb-4">Edit User</h4>
 
-          <div className="actions">
-            <button className="save-btn" onClick={handleSave}>
-              Save Changes
-            </button>
+            <form onSubmit={handleSave}>
+              <div className="row g-3">
 
-            <button
-              className="cancel-btn"
-              onClick={() => navigate("/users")}
-            >
-              Cancel
-            </button>
+                {/* NAME */}
+                <div className="col-md-6">
+                  <label className="form-label">Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    className="form-control"
+                    value={user.name || ""}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                {/* EMAIL */}
+                <div className="col-md-6">
+                  <label className="form-label">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    className="form-control"
+                    value={user.email || ""}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                {/* PHONE */}
+                <div className="col-md-6">
+                  <label className="form-label">Phone Number</label>
+                  <input
+                    type="text"
+                    name="phoneNumber"
+                    className="form-control"
+                    value={user.phoneNumber || ""}
+                    onChange={handleChange}
+                  />
+                </div>
+
+              </div>
+
+              {/* ACTIONS */}
+              <div className="mt-4 d-flex justify-content-end gap-2">
+                <button type="submit" className="btn btn-primary px-4">
+                  Save
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary px-4"
+                  onClick={() => navigate("/users")}
+                >
+                  Cancel
+                </button>
+              </div>
+
+            </form>
+
           </div>
         </div>
 

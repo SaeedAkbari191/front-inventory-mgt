@@ -102,7 +102,7 @@ const UsersPage = () => {
                     <th>Email</th>
                     <th>Phone</th>
                     <th>Role</th>
-                    <th className="text-end">Actions</th>
+                    <th className="pe-5 text-end">Actions</th>
                   </tr>
                 </thead>
 
@@ -140,7 +140,7 @@ const UsersPage = () => {
 
                       <td className="text-end">
                         <button
-                          className="btn btn-sm btn-outline-primary me-2"
+                          className="btn btn-sm btn-outline-primary me-2 px-3"
                           onClick={() => navigate(`/users/edit/${u.id}`)}
                         >
                           Edit

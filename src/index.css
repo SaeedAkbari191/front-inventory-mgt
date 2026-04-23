@@ -314,33 +314,6 @@ input:focus, select:focus, textarea:focus {
 }
 
 
-/* PAGINATION */
-
-.pagination .page-link {
-  border-radius: 8px !important;
-  margin: 0 3px;
-  color: var(--text);
-  border: 1px solid #e2e8f0;
-  transition: all 0.2s ease;
-}
-
-.pagination .page-link:hover {
-  background: var(--accent);
-  color: white;
-  border-color: var(--accent);
-}
-
-.pagination .active .page-link {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: white;
-}
-
-.pagination .page-item.disabled .page-link {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 /* فرم‌ها داخل کارت */
 .card .form-label {
   font-weight: 500;
@@ -364,4 +337,44 @@ input:focus, select:focus, textarea:focus {
 
 img {
   object-fit: cover;
+}
+
+/* ================= PAGINATION ================= */
+
+.custom-pagination .page-link {
+  border: none;
+  margin: 0 4px;
+  border-radius: 8px;
+  color: var(--text);
+  background: var(--card);
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* hover */
+.custom-pagination .page-link:hover {
+  background: var(--accent);
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* active */
+.custom-pagination .page-item.active .page-link {
+  background: var(--accent);
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(15,118,110,0.3);
+}
+
+/* disabled */
+.custom-pagination .page-item.disabled .page-link {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* spacing */
+.pagination {
+  padding: 6px 10px;
+  background: transparent;
 }

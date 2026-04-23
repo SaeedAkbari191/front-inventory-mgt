@@ -56,14 +56,16 @@ const SupplierPage = () => {
         </div>
 
         {/* TABLE */}
-        <div className="shadow-sm border-0">
+        <div className="shadow-sm border-0 ">
           <div className="table-responsive">
             <table className="table table-hover align-middle mb-0">
 
               <thead className="table-light">
                 <tr>
-                  <th style={{width: "72%"}}>Name</th>
-                  <th style={{width: "28%"}} className="text-end pe-4">
+                  <th >Name</th>
+                  <th>Contact Info</th>
+                  <th >Address</th>
+                  <th className="pe-5 text-end ">
                     Actions
                   </th>
                 </tr>
@@ -72,7 +74,7 @@ const SupplierPage = () => {
               <tbody>
                 {suppliers.length === 0 && (
                   <tr>
-                    <td colSpan="2" className="text-center py-4 text-muted">
+                    <td colSpan="4" className="text-center py-4 text-muted">
                       No suppliers found
                     </td>
                   </tr>
@@ -81,18 +83,20 @@ const SupplierPage = () => {
                 {suppliers.map((s) => (
                   <tr key={s.id}>
                     <td className="fw-semibold">{s.name}</td>
+                    <td className="fw-semibold">{s.contactInfo}</td>
+                    <td className="fw-semibold">{s.address}</td>
 
                     <td className="text-end pe-4">
                       <div className="d-inline-flex gap-2">
                         <button
-                          className="btn btn-sm btn-outline-primary"
+                          className="btn btn-sm btn-outline-primary px-3"
                           onClick={() => navigate(`/edit-supplier/${s.id}`)}
                         >
                           Edit
                         </button>
 
                         <button
-                          className="btn btn-sm btn-outline-danger"
+                          className="btn btn-sm btn-outline-danger px-2"
                           onClick={() => handleDeleteSupplier(s.id)}
                         >
                           Delete

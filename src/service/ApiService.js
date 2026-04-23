@@ -284,14 +284,17 @@ export default class ApiService {
     }
 
     
-
-    static async getAllTransactions(filter) {
-        const response = await axios.get(`${this.BASE_URL}/transactions/all`, {
-            headers: this.getHeader(),
-            params: {filter}
-        })
-        return response.data;
-    }
+    static async getAllTransactions(page, size, filter) {
+    const response = await axios.get(`${this.BASE_URL}/transactions/all`, {
+        headers: this.getHeader(),
+        params: {
+            page: page,
+            size: size,
+            filter: filter
+        }
+    });
+    return response.data;
+}
 
     static async geTransactionsByMonthAndYear(month, year) {
         const response = await axios.get(`${this.BASE_URL}/transactions/by-month-year`, {
