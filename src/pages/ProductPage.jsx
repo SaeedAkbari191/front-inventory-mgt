@@ -10,7 +10,6 @@ const ProductPage = () => {
 
   const navigate = useNavigate();
 
-  //Pagination Set-Up
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const itemsPerPage = 10;
@@ -18,13 +17,13 @@ const ProductPage = () => {
   useEffect(() => {
     const getProducts = async () => {
       try {
-        const productData = await ApiService.getAllProducts();
+        const res = await ApiService.getAllProducts();
 
-        if (productData.status === 200) {
-          setTotalPages(Math.ceil(productData.products.length / itemsPerPage));
+        if (res.status === 200) {
+          setTotalPages(Math.ceil(res.products.length / itemsPerPage));
 
           setProducts(
-            productData.products.slice(
+            res.products.slice(
               (currentPage - 1) * itemsPerPage,
               currentPage * itemsPerPage
             )
@@ -32,7 +31,7 @@ const ProductPage = () => {
         }
       } catch (error) {
         showMessage(
-          error.response?.data?.message || "Error Getting Products: " + error
+          error.response?.data?.message || "Error loading products"
         );
       }
     };
@@ -40,78 +39,106 @@ const ProductPage = () => {
     getProducts();
   }, [currentPage]);
 
-  //Delete a product
-  const handleDeleteProduct = async (productId) => {
-    if (window.confirm("Are you sure you want to delete this Product?")) {
+  const handleDeleteProduct = async (id) => {
+    if (window.confirm("Delete this product?")) {
       try {
-        await ApiService.deleteProduct(productId);
-        showMessage("Product sucessfully Deleted");
-        window.location.reload(); //relode page
+        await ApiService.deleteProduct(id);
+        showMessage("Product deleted successfully");
+        window.location.reload();
       } catch (error) {
         showMessage(
-          error.response?.data?.message ||
-            "Error Deleting in a product: " + error
+          error.response?.data?.message || "Error deleting product"
         );
       }
     }
   };
 
-  //metjhod to show message or errors
   const showMessage = (msg) => {
     setMessage(msg);
-    setTimeout(() => {
-      setMessage("");
-    }, 4000);
+    setTimeout(() => setMessage(""), 4000);
   };
 
   return (
     <Layout>
-      {message && <div className="message">{message}</div>}
+      <div className="container py-4">
 
-      <div className="product-page">
-        <div className="product-header">
-          <h1>Products</h1>
+        {message && (
+          <div className="alert alert-info shadow-sm">{message}</div>
+        )}
+
+        {/* Header */}
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h4 className="mb-0">Products</h4>
+
           <button
-            className="add-product-btn"
+            className="btn btn-primary"
             onClick={() => navigate("/add-product")}
           >
-            Add Product
+            + Add Product
           </button>
         </div>
 
-        {products && (
-          <div className="product-list">
-            {products.map((product) => (
-              <div key={product.id} className="product-item">
-                <img
-                  className="product-image"
-                  src={product.imageUrl}
-                  alt={product.name}
-                />
+        {/* Product Grid */}
+        <div className="row g-3">
+          {products.map((product) => (
+            <div key={product.id} className="col-md-4">
+              <div className="card shadow-sm h-100 border-0">
 
-                <div className="product-info">
-                    <h3 className="name">{product.name}</h3>
-                    <p className="sku">Sku: {product.su}</p>
-                    <p className="price">Price: {product.price}</p>
-                    <p className="quantity">Quantity: {product.stockQuantity}</p>
-                </div>
+                {/* Image */}
+                {product.imageUrl && (
+                  <img
+                    src={product.imageUrl}
+                    alt={product.name}
+                    className="card-img-top"
+                    style={{ height: "180px", objectFit: "cover" }}
+                  />
+                )}
 
-                <div className="product-actions">
-                    <button className="edit-btn" onClick={()=> navigate(`/edit-product/${product.id}`)}>Edit</button>
-                    <button  className="delete-btn" onClick={()=> handleDeleteProduct(product.id)}>Delete</button>
+                <div className="card-body">
+
+                  {/* 🔥 اصلاح شده */}
+                  <h5 className="card-title">{product.name}</h5>
+
+                  <p className="mb-1 text-muted">
+                    <strong>SKU:</strong> {product.sku}
+                  </p>
+
+                  <p className="mb-3">
+                    <strong>Quantity:</strong> {product.stock ?? 0}
+                  </p>
+
+                  {/* Actions */}
+                  <div className="d-flex justify-content-between">
+                    <button
+                      className="btn btn-outline-primary btn-sm"
+                      onClick={() => navigate(`/edit-product/${product.id}`)}
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      className="btn btn-outline-danger btn-sm"
+                      onClick={() => handleDeleteProduct(product.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
+
       </div>
 
       <PaginationComponent
-      currentPage={currentPage}
-      totalPages={totalPages}
-      onPageChange={setCurrentPage}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
       />
     </Layout>
   );
 };
+
 export default ProductPage;

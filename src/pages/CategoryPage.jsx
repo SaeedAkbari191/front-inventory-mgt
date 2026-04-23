@@ -93,48 +93,109 @@ const CategoryPage = () => {
   };
 
   return (
-    <Layout>
-      {message && <div className="message">{message}</div>}
-      <div className="category-page">
-        <div className="category-header">
-          <h1>Categories</h1>
-          <div className="add-cat">
+  <Layout>
+    <div className="container py-4">
+
+      {message && (
+        <div className="alert alert-danger">{message}</div>
+      )}
+
+      {/* TITLE */}
+      <h3 className="fw-bold mb-4">Categories Management</h3>
+
+      {/* FORM BAR */}
+      <div className="bg-light p-3 rounded mb-4 border">
+        <div className="row align-items-end g-2">
+
+          <div className="col-md-6">
+            <label className="form-label fw-semibold">Category Name</label>
             <input
+              className="form-control"
+              placeholder="Enter category name..."
               value={categoryName}
-              type="text"
-              placeholder="Category Name"
               onChange={(e) => setCategoryName(e.target.value)}
             />
+          </div>
 
+          <div className="col-md-6 d-flex gap-2">
             {!isEditing ? (
-              <button onClick={addCategory}>Add Category</button>
+              <button className="btn btn-primary" onClick={addCategory}>
+                Add Category
+              </button>
             ) : (
-              <button onClick={editCategory}>Edit Cateogry</button>
+              <>
+                <button className="btn btn-warning" onClick={editCategory}>
+                  Update
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setCategoryName("");
+                  }}
+                >
+                  Cancel
+                </button>
+              </>
             )}
           </div>
+
         </div>
-
-        {categories && (
-          <ul className="category-list">
-            {categories.map((category) => (
-              <li className="category-item" key={category.id}>
-                <span>{category.name}</span>
-
-                <div className="category-actions">
-                  <button onClick={() => handleEditCategory(category)}>
-                    Edit
-                  </button>
-                  <button onClick={() => handleDeleteCategory(category.id)}>
-                    Edlete
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
       </div>
-    </Layout>
-  );
+
+      {/* TABLE */}
+      <div className="table-responsive">
+        <table className="table table-hover align-middle">
+
+          <thead className="table-light">
+            <tr>
+              <th>Name</th>
+              <th className="text-end" style={{ width: "200px" }}>
+                Actions
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {categories.length === 0 && (
+              <tr>
+                <td colSpan="2" className="text-center text-muted py-4">
+                  No categories found
+                </td>
+              </tr>
+            )}
+
+            {categories.map((category) => (
+              <tr key={category.id}>
+                <td className="fw-semibold">{category.name}</td>
+
+                <td className="text-end">
+                  <div className="d-flex justify-content-end gap-2">
+                    <button
+                      className="btn btn-sm btn-outline-primary"
+                      onClick={() => handleEditCategory(category)}
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => handleDeleteCategory(category.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+
+        </table>
+      </div>
+
+    </div>
+  </Layout>
+);
 };
 
 export default CategoryPage;

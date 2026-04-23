@@ -12,8 +12,10 @@ import PurchasePage from "./pages/PurchasePage";
 import SellPage from "./pages/SellPage";
 import TransactionsPage from "./pages/TransactionsPage";
 import TransactionDetailsPage from "./pages/TransactionDetailsPage";
-import ProfilePage from "./pages/ProfilePage";
+import ProfilePage from "./pages/UserPage";
 import DashboardPage from "./pages/DashboardPage";
+import ReturnToSupplierPage from "./pages/ReturnToSupplierPage";
+import EditUserPage from "./pages/EditUserPage";
 
 
 function App() {
@@ -37,10 +39,12 @@ function App() {
           {/* ADMIN AND MANAGERS ROUTES */}
         <Route path="/purchase" element={<ProtectedRoute element={<PurchasePage/>}/>}/>
         <Route path="/sell" element={<ProtectedRoute element={<SellPage/>}/>}/>
+        <Route path="/return" element={<ProtectedRoute element={<ReturnToSupplierPage/>}/>}/>
         <Route path="/transaction" element={<ProtectedRoute element={<TransactionsPage/>}/>}/>
         <Route path="/transaction/:transactionId" element={<ProtectedRoute element={<TransactionDetailsPage/>}/>}/>
 
-        <Route path="/profile" element={<ProtectedRoute element={<ProfilePage/>}/>}/>
+        <Route path="/users" element={<ProtectedRoute element={<ProfilePage/>}/>}/>
+        <Route path="/users/edit/:id" element={<EditUserPage />} />
         <Route path="/dashboard" element={<ProtectedRoute element={<DashboardPage/>}/>}/>
 
 

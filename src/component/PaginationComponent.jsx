@@ -1,34 +1,37 @@
 import React from "react";
 
-const PaginationComponent = ({currentPage, totalPages, onPageChange}) =>{
-    //Generate page numbers based on total pages
-    const pageNumbers = Array.from({length: totalPages}, (_, i) => i+1);
+const PaginationComponent = ({ currentPage, totalPages, onPageChange }) => {
 
-    return(
-        <div className="pagination-container">
-            <button 
-            className="pagination-button"
-            disabled={currentPage === 1}
-            onClick={()=> onPageChange(currentPage - 1)}
-            >
-                &laquo; Prev
-            </button>
+  if (totalPages === 0) return null;
 
-            {pageNumbers.map((number) =>(
-                <button key={number}
-                className={`pagination-button ${currentPage === number ? "active": ""} ` }
-                onClick={()=> onPageChange(number)}>
-                {number}
-                </button>
-            ))}
+  return (
+    <div className="d-flex justify-content-center align-items-center gap-2 mt-4 flex-wrap">
 
-            <button className="pagination-button"
-            disabled={currentPage === totalPages}
-            onClick={()=> onPageChange(currentPage + 1)}>
-                    Next &raquo;
-            </button>
+      {/* PREV */}
+      <button
+        className="btn btn-sm btn-outline-secondary"
+        disabled={currentPage === 1}
+        onClick={() => onPageChange(currentPage - 1)}
+      >
+        « Prev
+      </button>
 
-        </div>
-    )
-}
+      {/* CURRENT PAGE */}
+      <span className="px-3 py-1 border rounded bg-light">
+        Page {currentPage} of {totalPages}
+      </span>
+
+      {/* NEXT */}
+      <button
+        className="btn btn-sm btn-outline-secondary"
+        disabled={currentPage === totalPages}
+        onClick={() => onPageChange(currentPage + 1)}
+      >
+        Next »
+      </button>
+
+    </div>
+  );
+};
+
 export default PaginationComponent;

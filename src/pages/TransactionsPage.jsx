@@ -54,74 +54,141 @@ const TransactionsPage = () => {
     navigate(`/transaction/${id}`);
   };
 
+  const getBadge = (type) => {
+    switch (type) {
+      case "SALE":
+        return "success";
+      case "PURCHASE":
+        return "primary";
+      case "RETURN_TO_SUPPLIER":
+        return "warning";
+      default:
+        return "secondary";
+    }
+  };
+
   return (
     <Layout>
-      {message && <p className="message">{message}</p>}
+      <div className="container py-4">
 
-      <div className="transactions-page">
-        <div className="transactions-header">
-          <h1>Transactions</h1>
+        {/* ALERT */}
+        {message && (
+          <div className="alert alert-danger">{message}</div>
+        )}
 
-          <div className="transaction-search">
+        {/* HEADER */}
+        <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+          <h3 className="fw-bold">Transactions</h3>
+
+          <div className="d-flex gap-2">
             <input
-              placeholder="Search transaction ..."
+              className="form-control"
+              placeholder="Search transaction..."
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              type="text"
             />
-            <button onClick={handleSearch}>Search</button>
+
+            <button className="btn btn-primary" onClick={handleSearch}>
+              Search
+            </button>
           </div>
         </div>
 
-        <table className="transactions-table">
-          <thead>
-            <tr>
-              <th>TYPE</th>
-              <th>STATUS</th>
-              <th>TOTAL PRICE</th>
-              <th>TOTAL PRODUCTS</th>
-              <th>DATE</th>
-              <th>ACTIONS</th>
-            </tr>
-          </thead>
+        {/* TABLE CARD */}
+        <div className="shadow-sm rounded border bg-light ">
+          <div className="card-body p-0 ">
 
-          <tbody>
-            {transactions.map((t) => (
-              <tr key={t.id}>
-                <td>{t.transactionType}</td>
-                <td>{t.status}</td>
+            <div className="table-responsive">
+              <table className="table table-hover align-middle mb-0">
 
-                <td>{t.totalPrice ?? 0}</td>
+                <thead className="table-light">
+                  <tr>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Total Price</th>
+                    <th>Products</th>
+                    <th>Date</th>
+                    <th className="text-end">Actions</th>
+                  </tr>
+                </thead>
 
-                {/* FIX اصلی */}
-                <td>
-  {t.items
-    ? t.items.reduce((sum, i) => sum + i.quantity, 0)
-    : 0}
-</td>
+                <tbody>
+                  {transactions.length === 0 && (
+                    <tr>
+                      <td colSpan="6" className="text-center py-4 text-muted">
+                        No transactions found
+                      </td>
+                    </tr>
+                  )}
 
-                <td>
-                  {t.createdAt
-                    ? new Date(t.createdAt).toLocaleString()
-                    : "-"}
-                </td>
+                  {transactions.map((t) => (
+                    <tr key={t.id}>
 
-                <td>
-                  <button onClick={() => navigateToTransactionDetailsPage(t.id)}>
-                    View Details
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                      {/* TYPE */}
+                      <td>
+                        <span className={`badge bg-${getBadge(t.transactionType)}`}>
+                          {t.transactionType}
+                        </span>
+                      </td>
+
+                      {/* STATUS */}
+                      <td>
+                        <span className="badge bg-secondary">
+                          {t.status}
+                        </span>
+                      </td>
+
+                      {/* PRICE */}
+                      <td className="fw-semibold">
+                        {t.totalPrice ?? 0}
+                      </td>
+
+                      {/* QTY */}
+                      <td>
+                        {t.items
+                          ? t.items.reduce((sum, i) => sum + i.quantity, 0)
+                          : 0}
+                      </td>
+
+                      {/* DATE */}
+                      <td className="text-muted small">
+                        {t.createdAt
+                          ? new Date(t.createdAt).toLocaleString()
+                          : "-"}
+                      </td>
+
+                      {/* ACTION */}
+                      <td className="text-end">
+                        <button
+                          className="btn btn-sm btn-outline-primary"
+                          onClick={() =>
+                            navigateToTransactionDetailsPage(t.id)
+                          }
+                        >
+                          Details
+                        </button>
+                      </td>
+
+                    </tr>
+                  ))}
+                </tbody>
+
+              </table>
+            </div>
+
+          </div>
+        </div>
+
+        {/* PAGINATION */}
+        <div className="mt-4">
+          <PaginationComponent
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+
       </div>
-
-      <PaginationComponent
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-      />
     </Layout>
   );
 };

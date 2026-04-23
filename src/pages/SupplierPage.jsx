@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Layout from "../component/Layout";
 import ApiService from "../service/ApiService";
 import { useNavigate } from "react-router-dom";
@@ -9,20 +9,14 @@ const SupplierPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    //fetech all suppliers
     const getSuppliers = async () => {
       try {
-        const responseData = await ApiService.getAllSuppliers();
-        if (responseData.status === 200) {
-          setSuppliers(responseData.suppliers);
-        } else {
-          showMessage(responseData.message);
+        const res = await ApiService.getAllSuppliers();
+        if (res.status === 200) {
+          setSuppliers(res.suppliers || []);
         }
       } catch (error) {
-        showMessage(
-          error.response?.data?.message || "Error Getting Suppliers: " + error
-        );
-        console.log(error);
+        showMessage(error.response?.data?.message || "Error loading suppliers");
       }
     };
     getSuppliers();
@@ -30,60 +24,92 @@ const SupplierPage = () => {
 
   const showMessage = (msg) => {
     setMessage(msg);
-    setTimeout(() => {
-      setMessage("");
-    }, 4000);
+    setTimeout(() => setMessage(""), 4000);
   };
 
-
-//Delete Supplier
-const handleDeleteSupplier = async (supplierId) => {
-  try {
-    if (window.confirm("Are you sure you want to delete this supplier? ")) {
-      await ApiService.deleteSupplier(supplierId);
-      window.location.reload();
+  const handleDeleteSupplier = async (id) => {
+    if (window.confirm("Delete this supplier?")) {
+      await ApiService.deleteSupplier(id);
+      setSuppliers(prev => prev.filter(s => s.id !== id));
+      showMessage("Supplier deleted");
     }
-  } catch (error) {
-    showMessage(
-      error.response?.data?.message || "Error Deleting a Suppliers: " + error
-    );
-  }
-};
+  };
 
-
-
-return(
+  return (
     <Layout>
-        {message && <div className="message">{message}</div>}
-        <div className="supplier-page">
-            <div className="supplier-header">
-                <h1>Suppliers</h1>
-                <div className="add-sup">
-                    <button onClick={()=> navigate("/add-supplier")} >Add Supplier</button>
-                </div>
-            </div>
+      <div className="container py-4">
+
+        {message && (
+          <div className="alert alert-success">{message}</div>
+        )}
+
+        {/* HEADER */}
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h3 className="fw-bold">Suppliers</h3>
+
+          <button
+            className="btn btn-primary"
+            onClick={() => navigate("/add-supplier")}
+          >
+            Add Supplier
+          </button>
         </div>
 
-        {suppliers && 
-        <ul className="supplier-list">
-            
-            {suppliers.map((supplier) => (
-                <li className="supplier-item" key={supplier.id}>
-                    <span>{supplier.name}</span>
+        {/* TABLE */}
+        <div className="shadow-sm border-0">
+          <div className="table-responsive">
+            <table className="table table-hover align-middle mb-0">
 
-                    <div className="supplier-actions">
-                        <button onClick={()=> navigate(`/edit-supplier/${supplier.id}`)} >Edit</button>
-                        <button onClick={()=> handleDeleteSupplier(supplier.id)} >Delete</button>
-                    </div>
+              <thead className="table-light">
+                <tr>
+                  <th style={{width: "72%"}}>Name</th>
+                  <th style={{width: "28%"}} className="text-end pe-4">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
 
-                </li>
-            ))}
+              <tbody>
+                {suppliers.length === 0 && (
+                  <tr>
+                    <td colSpan="2" className="text-center py-4 text-muted">
+                      No suppliers found
+                    </td>
+                  </tr>
+                )}
 
-        </ul>
-        
-        }
+                {suppliers.map((s) => (
+                  <tr key={s.id}>
+                    <td className="fw-semibold">{s.name}</td>
+
+                    <td className="text-end pe-4">
+                      <div className="d-inline-flex gap-2">
+                        <button
+                          className="btn btn-sm btn-outline-primary"
+                          onClick={() => navigate(`/edit-supplier/${s.id}`)}
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          className="btn btn-sm btn-outline-danger"
+                          onClick={() => handleDeleteSupplier(s.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+
+            </table>
+          </div>
+        </div>
+
+      </div>
     </Layout>
-)
+  );
+};
 
-}
 export default SupplierPage;

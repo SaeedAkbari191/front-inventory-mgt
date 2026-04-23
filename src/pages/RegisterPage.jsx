@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import ApiService from "../service/ApiService";
 
 const RegisterPage = () => {
@@ -16,65 +16,102 @@ const RegisterPage = () => {
     try {
       const registerData = { name, email, password, phoneNumber };
       await ApiService.registerUser(registerData);
-      setMessage("Registration Successfull");
-      navigate("/login");
+
+      setMessage("Registration successful");
+      setTimeout(() => {
+        navigate("/login");
+      }, 1000);
+
     } catch (error) {
       showMessage(
-        error.response?.data?.message || "Error Registering a User: " + error
+        error.response?.data?.message || "Registration failed"
       );
-      console.log(error);
     }
   };
 
   const showMessage = (msg) => {
     setMessage(msg);
-    setTimeout(() => {
-      setMessage("");
-    }, 4000);
+    setTimeout(() => setMessage(""), 4000);
   };
 
   return (
-    <div className="auth-container">
-      <h2>Register</h2>
+    <div className="d-flex align-items-center justify-content-center min-vh-100">
 
-      {message && <p className="message">{message}</p>}
+      <div className="card shadow-sm border-0 p-4" style={{ width: "100%", maxWidth: "420px" }}>
 
-      <form onSubmit={handleRegister}>
-        <input
-          type="text"
-          placeholder="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
+        <h4 className="text-center mb-4 fw-bold">Create Account</h4>
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+        {message && (
+          <div className="alert alert-info py-2 text-center">
+            {message}
+          </div>
+        )}
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+        <form onSubmit={handleRegister}>
 
-        <input
-          type="text"
-          placeholder="Phone Number"
-          value={phoneNumber}
-          onChange={(e) => setPhoneNumber(e.target.value)}
-          required
-        />
+          <div className="mb-3">
+            <label className="form-label text-muted small">Full Name</label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Enter your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
 
-        <button type="submit">Register</button>
-      </form>
-      <p>Already have an account? <a href="/login">Login</a></p>
+          <div className="mb-3">
+            <label className="form-label text-muted small">Email</label>
+            <input
+              type="email"
+              className="form-control"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label text-muted small">Password</label>
+            <input
+              type="password"
+              className="form-control"
+              placeholder="Enter password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label text-muted small">Phone Number</label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Enter phone number"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              required
+            />
+          </div>
+
+          <button className="btn btn-primary w-100 mt-2" type="submit">
+            Register
+          </button>
+
+        </form>
+
+        <p className="text-center mt-3 small text-muted">
+          Already have an account?{" "}
+          <Link to="/login" className="fw-semibold">
+            Login
+          </Link>
+        </p>
+
+      </div>
+
     </div>
   );
 };

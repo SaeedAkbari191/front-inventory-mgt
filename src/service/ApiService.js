@@ -101,12 +101,24 @@ export default class ApiService {
         return response.data;
     }
 
+    static async updateUserRole(userId, role) {
+    const response = await axios.put(
+        `${this.BASE_URL}/users/role/${userId}?role=${role}`,
+        {},
+        { headers: this.getHeader() }
+    );
+    return response.data;
+}
+
+    
+
     static async deleteUser(userId) {
-        const response = await axios.delete(`${this.BASE_URL}/users/update/${userId}`, {
-            headers: this.getHeader()
-        });
-        return response.data;
-    }
+    const response = await axios.delete(
+        `${this.BASE_URL}/users/delete/${userId}`,
+        { headers: this.getHeader() }
+    );
+    return response.data;
+}
 
 
 
@@ -156,6 +168,8 @@ export default class ApiService {
         });
         return response.data;
     }
+
+    
 
     static async deleteProduct(productId) {
         const response = await axios.delete(`${this.BASE_URL}/products/delete/${productId}`, {
@@ -268,6 +282,8 @@ export default class ApiService {
         })
         return response.data;
     }
+
+    
 
     static async getAllTransactions(filter) {
         const response = await axios.get(`${this.BASE_URL}/transactions/all`, {

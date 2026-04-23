@@ -4,14 +4,14 @@ import ApiService from "../service/ApiService";
 import { useNavigate, useParams } from "react-router-dom";
 
 const AddEditSupplierPage = () => {
-  const { supplierId } = useParams("");
+  const { supplierId } = useParams();
+  const navigate = useNavigate();
+
   const [name, setName] = useState("");
   const [contactInfo, setContactInfo] = useState("");
   const [address, setAddress] = useState("");
   const [message, setMessage] = useState("");
   const [isEditing, setIsEditing] = useState(false);
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (supplierId) {
@@ -19,96 +19,123 @@ const AddEditSupplierPage = () => {
 
       const fetchSupplier = async () => {
         try {
-          const supplierData = await ApiService.getSupplierById(supplierId);
-          if (supplierData.status === 200) {
-            setName(supplierData.supplier.name);
-            setContactInfo(supplierData.supplier.contactInfo);
-            setAddress(supplierData.supplier.address);
+          const res = await ApiService.getSupplierById(supplierId);
+          if (res.status === 200) {
+            setName(res.supplier.name);
+            setContactInfo(res.supplier.contactInfo);
+            setAddress(res.supplier.address);
           }
         } catch (error) {
           showMessage(
-            error.response?.data?.message ||
-              "Error Getting a SUpplier by Id: " + error
+            error.response?.data?.message || "Error loading supplier"
           );
         }
       };
+
       fetchSupplier();
     }
   }, [supplierId]);
 
-  //handle form submission for both add and edit supplier
+  const showMessage = (msg) => {
+    setMessage(msg);
+    setTimeout(() => setMessage(""), 4000);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const supplierData = { name, contactInfo, address };
+
+    const data = { name, contactInfo, address };
 
     try {
       if (isEditing) {
-        await ApiService.updateSupplier(supplierId, supplierData);
-        showMessage("Supplier Edited succesfully");
-        navigate("/supplier")
+        await ApiService.updateSupplier(supplierId, data);
+        showMessage("Supplier updated successfully");
       } else {
-        await ApiService.addSupplier(supplierData);
-        showMessage("Supplier Added succesfully");
-        navigate("/supplier")
+        await ApiService.addSupplier(data);
+        showMessage("Supplier added successfully");
       }
+
+      navigate("/supplier");
     } catch (error) {
       showMessage(
-        error.response?.data?.message ||
-          "Error Getting a SUpplier by Id: " + error
+        error.response?.data?.message || "Error saving supplier"
       );
     }
   };
 
-  //metjhod to show message or errors
-  const showMessage = (msg) => {
-    setMessage(msg);
-    setTimeout(() => {
-      setMessage("");
-    }, 4000);
-  };
-
   return (
     <Layout>
-      {message && <div className="message">{message}</div>}
-      <div className="supplier-form-page">
-        <h1>{isEditing ? "Edit Supplier" : "Add Supplier"}</h1>
+      <div className="container py-4">
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Supplier Name</label>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              type="text"
-            />
-          </div>
+        {message && (
+          <div className="alert alert-info shadow-sm">{message}</div>
+        )}
 
-          <div className="form-group">
-            <label>Contact Info</label>
-            <input
-              value={contactInfo}
-              onChange={(e) => setContactInfo(e.target.value)}
-              required
-              type="text"
-            />
-          </div>
+        <div className="card shadow-sm border-0">
+          <div className="card-body">
 
-          <div className="form-group">
-            <label>Address</label>
-            <input
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              required
-              type="text"
-            />
+            {/* Header */}
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <h4 className="mb-0">
+                {isEditing ? "Edit Supplier" : "Add Supplier"}
+              </h4>
+
+              <button
+                className="btn btn-outline-secondary"
+                onClick={() => navigate("/supplier")}
+              >
+                Back
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit}>
+
+              <div className="mb-3">
+                <label className="form-label">Supplier Name</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label">Contact Info</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={contactInfo}
+                  onChange={(e) => setContactInfo(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="form-label">Address</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  required
+                />
+              </div>
+
+              <button className="btn btn-primary w-100">
+                {isEditing ? "Update Supplier" : "Add Supplier"}
+              </button>
+
+            </form>
+
           </div>
-          <button type="submit">
-            {isEditing ? "Edit Supplier" : "Add Supplier"}
-          </button>
-        </form>
+        </div>
+
       </div>
     </Layout>
   );
 };
+
 export default AddEditSupplierPage;
