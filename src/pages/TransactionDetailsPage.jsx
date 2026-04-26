@@ -1,11 +1,10 @@
 import React, { useEffect, useState, useCallback } from "react";
 import Layout from "../component/Layout";
 import ApiService from "../service/ApiService";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 const TransactionDetailsPage = () => {
   const { transactionId } = useParams();
-  const navigate = useNavigate();
 
   const [transaction, setTransaction] = useState(null);
   const [status, setStatus] = useState("");
@@ -20,6 +19,7 @@ const TransactionDetailsPage = () => {
     const fetchTransaction = async () => {
       try {
         const res = await ApiService.getTransactionById(transactionId);
+
         if (res.status === 200) {
           setTransaction(res.transaction);
           setStatus(res.transaction.status);
@@ -35,7 +35,7 @@ const TransactionDetailsPage = () => {
   const handleUpdateStatus = async () => {
     try {
       await ApiService.updateTransactionStatus(transactionId, status);
-      showMessage("Status updated");
+      showMessage("Status updated successfully");
     } catch {
       showMessage("Failed to update status");
     }
@@ -44,7 +44,7 @@ const TransactionDetailsPage = () => {
   if (!transaction) return null;
 
   const totalProducts =
-    transaction.items?.reduce((sum, i) => sum + i.quantity, 0) || 0;
+    transaction.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
   const getBadge = (type) => {
     switch (type) {
@@ -59,156 +59,226 @@ const TransactionDetailsPage = () => {
     }
   };
 
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case "COMPLETED":
+        return "success";
+      case "PROCESSING":
+        return "primary";
+      case "PENDING":
+        return "warning";
+      case "CANCELLED":
+        return "danger";
+      default:
+        return "secondary";
+    }
+  };
+
   return (
     <Layout>
       <div className="container py-4">
 
-        {/* MESSAGE */}
+        {/* ALERT */}
         {message && (
-          <div className="alert alert-info shadow-sm">{message}</div>
+          <div className="alert alert-info shadow-sm border-0">
+            {message}
+          </div>
         )}
 
         {/* HEADER */}
-        <div className="d-flex justify-content-between align-items-center mb-4">
+        <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
           <div>
-            <h4 className="fw-bold mb-1">Transaction #{transaction.id}</h4>
-            <small className="text-muted">
+            <h3 className="fw-bold mb-1">
+              Transaction #{transaction.id}
+            </h3>
+
+            <p className="text-muted mb-0 small">
               {new Date(transaction.createdAt).toLocaleString()}
-            </small>
+            </p>
           </div>
 
-          <div className="d-flex gap-2 align-items-center">
+          <div className="d-flex gap-2">
             <span className={`badge bg-${getBadge(transaction.transactionType)} px-3 py-2`}>
               {transaction.transactionType}
             </span>
 
-            <span className="badge bg-secondary px-3 py-2">
+            <span className={`badge bg-${getStatusBadge(transaction.status)} px-3 py-2`}>
               {transaction.status}
             </span>
           </div>
         </div>
 
-        {/* SUMMARY */}
+        {/* TOP SUMMARY */}
         <div className="row g-3 mb-4">
 
           <div className="col-md-4">
-            <div className="card shadow-sm border-0 h-100">
+            <div className="card border-0 shadow-sm h-100">
               <div className="card-body text-center">
-                <p className="text-muted mb-1">Total Price</p>
-                <h4 className="fw-bold mb-0">
-                  ${transaction.totalPrice?.toFixed(2)}
+                <p className="text-muted mb-2">Total Price</p>
+                <h4 className="fw-bold text-primary mb-0">
+                  ${transaction.totalPrice?.toFixed(2) || "0.00"}
                 </h4>
               </div>
             </div>
           </div>
 
           <div className="col-md-4">
-            <div className="card shadow-sm border-0 h-100">
+            <div className="card border-0 shadow-sm h-100">
               <div className="card-body text-center">
-                <p className="text-muted mb-1">Total Items</p>
-                <h4 className="fw-bold mb-0">{totalProducts}</h4>
+                <p className="text-muted mb-2">Products Count</p>
+                <h4 className="fw-bold mb-0">
+                  {totalProducts}
+                </h4>
               </div>
             </div>
           </div>
 
           <div className="col-md-4">
-            <div className="card shadow-sm border-0 h-100">
+            <div className="card border-0 shadow-sm h-100">
               <div className="card-body text-center">
-                <p className="text-muted mb-1">Description</p>
-                <p className="fw-semibold mb-0">
-                  {transaction.description || "-"}
-                </p>
+                <p className="text-muted mb-2">Current Status</p>
+                <span className={`badge bg-${getStatusBadge(transaction.status)} px-3 py-2`}>
+                  {transaction.status}
+                </span>
               </div>
             </div>
           </div>
 
         </div>
 
-        {/* MAIN GRID */}
+        {/* MAIN CONTENT */}
         <div className="row g-4">
 
-          {/* LEFT SIDE */}
+          {/* LEFT COLUMN */}
           <div className="col-lg-8">
 
-            {/* ITEMS */}
-            <div className="card shadow-sm border-0 mb-4">
-              <div className="card-body p-0">
+            {/* PRODUCT TABLE */}
+            <div className="card border-0 shadow-sm mb-4">
+              <div className="card-header bg-white border-bottom fw-bold py-3">
+                Product Details
+              </div>
 
-                <div className="px-3 py-2 border-bottom fw-semibold">
-                  Products
-                </div>
+              <div className="table-responsive">
+                <table className="table table-hover align-middle mb-0">
 
-                <div className="table-responsive">
-                  <table className="table table-hover mb-0 align-middle">
-                    <thead className="table-light">
-                      <tr>
-                        <th>Product</th>
-                        <th>Qty</th>
-                        <th>Unit Price</th>
-                        <th>Total</th>
+                  <thead className="table-light">
+                    <tr>
+                      <th>Product Name</th>
+                      <th>Quantity</th>
+                      <th>Unit Price</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {transaction.items?.map((item, index) => (
+                      <tr key={index}>
+                        <td className="fw-semibold">
+                          {item.productName}
+                        </td>
+
+                        <td>{item.quantity}</td>
+
+                        <td>${Number(item.unitPrice).toFixed(2)}</td>
+
+                        <td className="fw-bold">
+                          ${(item.quantity * item.unitPrice).toFixed(2)}
+                        </td>
                       </tr>
-                    </thead>
+                    ))}
+                  </tbody>
 
-                    <tbody>
-                      {transaction.items?.map((item, idx) => (
-                        <tr key={idx}>
-                          <td className="fw-semibold">{item.productName}</td>
-                          <td>{item.quantity}</td>
-                          <td>${item.unitPrice}</td>
-                          <td className="fw-semibold">
-                            ${(item.unitPrice * item.quantity).toFixed(2)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
+                </table>
+              </div>
+            </div>
 
-                  </table>
+            {/* DESCRIPTION + NOTE */}
+            <div className="card border-0 shadow-sm">
+              <div className="card-header bg-white border-bottom fw-bold py-3">
+                Additional Information
+              </div>
+
+              <div className="card-body">
+                <div className="row g-4">
+
+                  <div className="col-md-6">
+                    <label className="text-muted small mb-1">
+                      Description
+                    </label>
+
+                    <div className="fw-semibold">
+                      {transaction.description || "-"}
+                    </div>
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="text-muted small mb-1">
+                      Note
+                    </label>
+
+                    <div className="fw-semibold">
+                      {transaction.note || "-"}
+                    </div>
+                  </div>
+
                 </div>
-
               </div>
             </div>
 
           </div>
 
-          {/* RIGHT SIDE */}
+          {/* RIGHT COLUMN */}
           <div className="col-lg-4">
 
-            {/* USER */}
+            {/* USER INFO */}
             {transaction.user && (
-              <div className="card shadow-sm border-0 mb-3">
+              <div className="card border-0 shadow-sm mb-4">
+                <div className="card-header bg-white border-bottom fw-bold py-3">
+                  User Information
+                </div>
+
                 <div className="card-body">
-                  <h6 className="fw-bold mb-2">User</h6>
-                  <p className="mb-1 fw-semibold">{transaction.user.name}</p>
-                  <small className="text-muted d-block">
+                  <p className="fw-semibold mb-1">
+                    {transaction.user.name}
+                  </p>
+
+                  <p className="text-muted mb-1 small">
                     {transaction.user.email}
-                  </small>
-                  <small className="text-muted">
+                  </p>
+
+                  <p className="text-muted small mb-0">
                     {transaction.user.phoneNumber}
-                  </small>
+                  </p>
                 </div>
               </div>
             )}
 
-            {/* SUPPLIER */}
+            {/* SUPPLIER INFO */}
             {transaction.supplier && (
-              <div className="card shadow-sm border-0 mb-3">
+              <div className="card border-0 shadow-sm mb-4">
+                <div className="card-header bg-white border-bottom fw-bold py-3">
+                  Supplier Information
+                </div>
+
                 <div className="card-body">
-                  <h6 className="fw-bold mb-2">Supplier</h6>
-                  <p className="mb-1 fw-semibold">
+                  <p className="fw-semibold mb-1">
                     {transaction.supplier.name}
                   </p>
-                  <small className="text-muted">
+
+                  <p className="text-muted small mb-0">
                     {transaction.supplier.contactInfo}
-                  </small>
+                  </p>
                 </div>
               </div>
             )}
 
-            {/* UPDATE */}
-            <div className="card shadow-sm border-0">
-              <div className="card-body">
-                <h6 className="fw-bold mb-3">Update Status</h6>
+            {/* STATUS UPDATE */}
+            <div className="card border-0 shadow-sm">
+              <div className="card-header bg-white border-bottom fw-bold py-3">
+                Update Transaction Status
+              </div>
 
+              <div className="card-body">
                 <select
                   className="form-select mb-3"
                   value={status}
@@ -226,7 +296,6 @@ const TransactionDetailsPage = () => {
                 >
                   Update Status
                 </button>
-
               </div>
             </div>
 
