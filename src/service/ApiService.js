@@ -72,12 +72,19 @@ export default class ApiService {
     }
 
 
-    static async getAllUsers() {
-        const response = await axios.get(`${this.BASE_URL}/users/all`, {
-            headers: this.getHeader()
-        });
-        return response.data;
-    }
+
+    static async getAllUsers(page = 0, size = 10, filter = "") {
+    const response = await axios.get(`${this.BASE_URL}/users/all`, {
+        headers: this.getHeader(),
+        params: {
+            page,
+            size,
+            filter
+        }
+    });
+
+    return response.data;
+}
 
 
     static async getLoggedInUsesInfo() {
